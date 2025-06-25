@@ -1,56 +1,34 @@
-
-const express = require("express");
-const puppeteer = require("puppeteer");
+import express from "express";
+import puppeteer from "puppeteer";
 
 const app = express();
 app.use(express.json());
 
 app.post("/drive", async (req, res) => {
   console.log("🚀 Requête POST /drive reçue");
+  const { email, password, produits } = req.body;
 
-  const { produits, email, password } = req.body;
-
-  if (!produits || !email || !password) {
+  if (!email || !password || !produits || !Array.isArray(produits)) {
     return res.status(400).send("Champs manquants : produits, email, password");
   }
 
-  const browser = await puppeteer.launch({
-    headless: "new",
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
-  });
-
-  const page = await browser.newPage();
-
   try {
-    await page.goto("https://www.carrefour.fr/mon-compte/connexion", { waitUntil: "networkidle2" });
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
 
-    await page.type("#login-email", email);
-    await page.type("#login-password", password);
-    await page.click("button[type='submit']");
-    await page.waitForNavigation({ waitUntil: "networkidle2" });
+    const page = await browser.newPage();
+    await page.goto("https://www.google.com"); // test simple
 
-    for (const produit of produits) {
-      await page.goto("https://www.carrefour.fr", { waitUntil: "networkidle2" });
-      await page.type("input[type='search']", produit);
-      await page.keyboard.press("Enter");
-      await page.waitForTimeout(3000);
-
-      const boutons = await page.$x("//button[contains(., 'Ajouter au panier')]");
-      if (boutons.length > 0) {
-        await boutons[0].click();
-        await page.waitForTimeout(1000);
-      }
-    }
-
-    res.send("✅ Produits ajoutés avec succès au panier Carrefour.");
+    await browser.close();
+    res.send("Liste de courses envoyée !");
   } catch (err) {
     console.error(err);
-    res.status(500).send("❌ Erreur lors de l’ajout des produits");
-  } finally {
-    await browser.close();
+    res.status(500).send("Erreur lors du traitement");
   }
 });
 
-app.listen(process.env.PORT || 3000, () => {
+app.listen(3000, () => {
   console.log("✅ Serveur Puppeteer en ligne sur le port 3000");
 });

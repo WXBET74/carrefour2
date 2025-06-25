@@ -1,17 +1,13 @@
-
 {
   "name": "carrefour-drive-bot",
   "version": "1.0.0",
-  "description": "Ajout automatique de produits Carrefour via Puppeteer",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "puppeteer": "19.11.1"
-  },
-  "engines": {
-    "node": ">=16"
+    "puppeteer": "^22.8.2"
   }
 }
